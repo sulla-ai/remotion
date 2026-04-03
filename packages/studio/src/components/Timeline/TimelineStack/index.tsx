@@ -45,7 +45,11 @@ export const TimelineStack: React.FC<{
 		.previewServerState.type;
 
 	const assetPath = useMemo(() => {
-		if (sequence.type !== 'video' && sequence.type !== 'audio') {
+		if (
+			sequence.type !== 'video' &&
+			sequence.type !== 'audio' &&
+			sequence.type !== 'image'
+		) {
 			return null;
 		}
 
@@ -195,7 +199,8 @@ export const TimelineStack: React.FC<{
 			color: opening && isCompact ? VERY_LIGHT_TEXT : LIGHT_COLOR,
 			userSelect: 'none',
 			WebkitUserSelect: 'none',
-			borderBottom: hoverEffect ? '1px solid #fff' : 'none',
+			textDecoration: hoverEffect ? 'underline' : 'none',
+			textUnderlineOffset: 2,
 			cursor: hoverEffect ? 'pointer' : undefined,
 		};
 	}, [titleHoverable, isCompact, opening, titleHovered]);

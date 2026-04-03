@@ -1,5 +1,5 @@
 import type {ComponentType} from 'react';
-import React, {Suspense, useContext, useEffect} from 'react';
+import React, {Suspense, useCallback, useContext, useEffect} from 'react';
 import {createPortal} from 'react-dom';
 import type {z} from 'zod';
 import type {AnyZodObject} from './any-zod-type.js';
@@ -8,6 +8,8 @@ import {
 	CanUseRemotionHooksProvider,
 } from './CanUseRemotionHooks.js';
 import type {Codec} from './codec.js';
+import {CompositionRenderErrorContext} from './composition-render-error-context.js';
+import {CompositionErrorBoundary} from './CompositionErrorBoundary.js';
 import type {TComposition} from './CompositionManager.js';
 import {CompositionSetters} from './CompositionManagerContext.js';
 import {FolderContext} from './Folder.js';
@@ -19,10 +21,7 @@ import {portalNode} from './portal-node.js';
 import type {InferProps, PropsIfHasProps} from './props-if-has-props.js';
 import type {ProResProfile} from './prores-profile.js';
 import type {PixelFormat, VideoImageFormat} from './render-types.js';
-import {
-	PROPS_UPDATED_EXTERNALLY,
-	useResolvedVideoConfig,
-} from './ResolveCompositionConfig.js';
+import {useResolvedVideoConfig} from './ResolveCompositionConfig.js';
 import {useDelayRender} from './use-delay-render.js';
 import {useLazyComponent} from './use-lazy-component.js';
 import {useRemotionEnvironment} from './use-remotion-environment.js';
@@ -139,7 +138,7 @@ const InnerComposition = <
 	defaultProps,
 	schema,
 	...compProps
-}: CompositionProps<Schema, Props>) => {
+}: CompositionProps<Schema, Props> & {readonly stack?: string}) => {
 	const compManager = useContext(CompositionSetters);
 
 	const {registerComposition, unregisterComposition} = compManager;
@@ -179,6 +178,7 @@ const InnerComposition = <
 	}
 
 	const {folderName, parentName} = useContext(FolderContext);
+	const stack = (compProps as {stack?: string}).stack ?? null;
 
 	useEffect(() => {
 		// Ensure it's a URL safe id
@@ -199,10 +199,11 @@ const InnerComposition = <
 			defaultProps: serializeThenDeserializeInStudio(
 				(defaultProps ?? {}) as z.output<Schema> & Props,
 			) as InferProps<Schema, Props>,
-			nonce,
+			nonce: nonce.get(),
 			parentFolderName: parentName,
 			schema: schema ?? null,
 			calculateMetadata: compProps.calculateMetadata ?? null,
+			stack,
 		} as TComposition<Schema, Props>);
 
 		return () => {
@@ -221,21 +222,25 @@ const InnerComposition = <
 		parentName,
 		schema,
 		compProps.calculateMetadata,
+		stack,
 		registerComposition,
 		unregisterComposition,
 	]);
 
-	useEffect(() => {
-		window.dispatchEvent(
-			new CustomEvent<{resetUnsaved: string | null}>(PROPS_UPDATED_EXTERNALLY, {
-				detail: {
-					resetUnsaved: id,
-				},
-			}),
-		);
-	}, [defaultProps, id]);
-
 	const resolved = useResolvedVideoConfig(id);
+
+	const {setError, clearError} = useContext(CompositionRenderErrorContext);
+
+	const onError = useCallback(
+		(error: Error) => {
+			setError(error);
+		},
+		[setError],
+	);
+
+	const onClear = useCallback(() => {
+		clearError();
+	}, [clearError]);
 
 	if (
 		environment.isStudio &&
@@ -254,14 +259,16 @@ const InnerComposition = <
 
 		return createPortal(
 			<CanUseRemotionHooksProvider>
-				<Suspense fallback={<Loading />}>
-					<Comp
-						{
-							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							...((resolved.result.props ?? {}) as any)
-						}
-					/>
-				</Suspense>
+				<CompositionErrorBoundary onError={onError} onClear={onClear}>
+					<Suspense fallback={<Loading />}>
+						<Comp
+							{
+								// eslint-disable-next-line @typescript-eslint/no-explicit-any
+								...((resolved.result.props ?? {}) as any)
+							}
+						/>
+					</Suspense>
+				</CompositionErrorBoundary>
 			</CanUseRemotionHooksProvider>,
 			portalNode(),
 		);

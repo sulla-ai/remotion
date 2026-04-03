@@ -15,6 +15,8 @@ This page compares 4 options for rendering videos in the cloud:
 
 These options are deliberately distinct with different tradeoffs, so that you can choose the one that best fits your use case.
 
+See also our guides for deploying to [Azure Container Apps](/docs/azure-container-apps) and [Cloudflare Containers](/docs/cloudflare-containers), which uses the Node.JS/Bun APIs.
+
 ## Overall recommendation
 
 We recommend Remotion Lambda for most people as it has the best tradeoff for speed, ease of setup, maturity, total cost and scalability.
@@ -79,6 +81,8 @@ Remotion Lambda currently has the following features that Cloud Run does not hav
 - Rendering from PHP, Go and Python
 
 Rendering with Vercel Sandbox or the Node.JS APIs does not come with these features either, but you may build them based on top of the low-level APIs that are provided.
+
+`AV1` output is not available on Remotion Lambda or Linux ARM64 GNU because those runtimes ship only the essential codecs to stay lean.
 
 ## GPU
 

@@ -6,6 +6,7 @@ import {Control} from './control';
 import type {DemoType} from './types';
 import {
 	animationMathDemo,
+	arrowDemo,
 	circleDemo,
 	clockWipePresentationDemo,
 	cubePresentationDemo,
@@ -17,6 +18,7 @@ import {
 	heartDemo,
 	irisPresentationDemo,
 	lightLeakDemo,
+	starburstDemo,
 	noiseDemo,
 	nonePresentationDemo,
 	opacityDemo,
@@ -52,6 +54,7 @@ const container: React.CSSProperties = {
 
 const demos: DemoType[] = [
 	noiseDemo,
+	arrowDemo,
 	triangleDemo,
 	rectDemo,
 	circleDemo,
@@ -82,6 +85,7 @@ const demos: DemoType[] = [
 	springDampingDemo,
 	shaderDemo,
 	lightLeakDemo,
+	starburstDemo,
 	transitionSeriesTransitionDemo,
 	transitionSeriesOverlayDemo,
 	transitionSeriesEnterExitDemo,

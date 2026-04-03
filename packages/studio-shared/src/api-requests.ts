@@ -18,6 +18,8 @@ import type {ProjectInfo} from './project-info';
 import type {RequiredChromiumOptions} from './render-job';
 import type {EnumPath} from './stringify-default-props';
 
+export type SequenceNodePath = Array<string | number>;
+
 export type OpenInFileExplorerRequest = {
 	directory: string;
 };
@@ -179,23 +181,31 @@ export type DeleteStaticFileResponse = {
 	existed: boolean;
 };
 
-export type CanUpdateDefaultPropsRequest = {
-	compositionId: string;
-};
-
 export type CanUpdateDefaultPropsResponse =
 	| {
 			canUpdate: true;
+			currentDefaultProps: Record<string, unknown>;
 	  }
 	| {
 			canUpdate: false;
 			reason: string;
 	  };
 
+export type SubscribeToDefaultPropsRequest = {
+	compositionId: string;
+	clientId: string;
+};
+
+export type SubscribeToDefaultPropsResponse = CanUpdateDefaultPropsResponse;
+
+export type UnsubscribeFromDefaultPropsRequest = {
+	compositionId: string;
+	clientId: string;
+};
+
 export type CanUpdateSequencePropsRequest = {
 	fileName: string;
-	line: number;
-	column: number;
+	nodePath: SequenceNodePath;
 	keys: string[];
 };
 
@@ -211,8 +221,7 @@ export type SubscribeToSequencePropsResponse = CanUpdateSequencePropsResponse;
 
 export type UnsubscribeFromSequencePropsRequest = {
 	fileName: string;
-	line: number;
-	column: number;
+	nodePath: SequenceNodePath;
 	clientId: string;
 };
 
@@ -220,6 +229,7 @@ export type CanUpdateSequencePropsResponse =
 	| {
 			canUpdate: true;
 			props: Record<string, CanUpdateSequencePropStatus>;
+			nodePath: SequenceNodePath;
 	  }
 	| {
 			canUpdate: false;
@@ -228,21 +238,22 @@ export type CanUpdateSequencePropsResponse =
 
 export type SaveSequencePropsRequest = {
 	fileName: string;
-	line: number;
-	column: number;
+	nodePath: SequenceNodePath;
 	key: string;
 	value: string;
-	enumPaths: EnumPath[];
 	defaultValue: string | null;
+	observedKeys: string[];
 };
 
 export type SaveSequencePropsResponse =
 	| {
 			success: true;
+			newStatus: CanUpdateSequencePropsResponse;
 	  }
 	| {
 			success: false;
 			reason: string;
+			stack: string;
 	  };
 
 export type UpdateAvailableRequest = {};
@@ -267,6 +278,26 @@ export type InstallPackageRequest = {
 };
 export type InstallPackageResponse = {};
 
+export type UndoRequest = {};
+export type UndoResponse =
+	| {
+			success: true;
+	  }
+	| {
+			success: false;
+			reason: string;
+	  };
+
+export type RedoRequest = {};
+export type RedoResponse =
+	| {
+			success: true;
+	  }
+	| {
+			success: false;
+			reason: string;
+	  };
+
 export type ApiRoutes = {
 	'/api/cancel': ReqAndRes<CancelRenderRequest, CancelRenderResponse>;
 	'/api/render': ReqAndRes<AddRenderRequest, undefined>;
@@ -288,9 +319,13 @@ export type ApiRoutes = {
 		ApplyVisualControlRequest,
 		ApplyVisualControlResponse
 	>;
-	'/api/can-update-default-props': ReqAndRes<
-		CanUpdateDefaultPropsRequest,
-		CanUpdateDefaultPropsResponse
+	'/api/subscribe-to-default-props': ReqAndRes<
+		SubscribeToDefaultPropsRequest,
+		SubscribeToDefaultPropsResponse
+	>;
+	'/api/unsubscribe-from-default-props': ReqAndRes<
+		UnsubscribeFromDefaultPropsRequest,
+		undefined
 	>;
 	'/api/subscribe-to-sequence-props': ReqAndRes<
 		SubscribeToSequencePropsRequest,
@@ -319,4 +354,6 @@ export type ApiRoutes = {
 		InstallPackageRequest,
 		InstallPackageResponse
 	>;
+	'/api/undo': ReqAndRes<UndoRequest, UndoResponse>;
+	'/api/redo': ReqAndRes<RedoRequest, RedoResponse>;
 };

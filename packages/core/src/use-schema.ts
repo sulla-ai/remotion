@@ -81,7 +81,7 @@ export const useSchema = <
 
 		const currentValueKeys = Object.keys(currentValue);
 
-		const keysToUpdate = new Set(currentValueKeys).values();
+		const keysToUpdate = [...new Set(currentValueKeys)];
 
 		const merged = {} as Record<string, unknown>;
 
@@ -94,6 +94,7 @@ export const useSchema = <
 				runtimeValue: currentValue[key as keyof SchemaKeysRecord<S>] as unknown,
 				dragOverrideValue: overrideValues[key],
 				defaultValue: schema[key]?.default,
+				shouldResortToDefaultValueIfUndefined: false,
 			});
 		}
 

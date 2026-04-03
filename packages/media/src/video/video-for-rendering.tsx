@@ -26,7 +26,8 @@ import {TARGET_SAMPLE_RATE} from '../convert-audiodata/resample-audiodata';
 import {frameForVolumeProp} from '../looped-frame';
 import {type MediaOnError, callOnErrorAndResolve} from '../on-error';
 import {extractFrameViaBroadcastChannel} from '../video-extraction/extract-frame-via-broadcast-channel';
-import type {FallbackOffthreadVideoProps} from './props';
+import type {FallbackOffthreadVideoProps, VideoObjectFit} from './props';
+import {warnAboutObjectFitInStyleOrClassName} from './warn-object-fit-css';
 
 type InnerVideoProps = {
 	readonly className: string | undefined;
@@ -51,6 +52,8 @@ type InnerVideoProps = {
 	readonly trimAfterValue: number | undefined;
 	readonly headless: boolean;
 	readonly onError: MediaOnError | undefined;
+	readonly credentials: RequestCredentials | undefined;
+	readonly objectFit: VideoObjectFit;
 };
 
 type FallbackToOffthreadVideo = {
@@ -80,6 +83,8 @@ export const VideoForRendering: React.FC<InnerVideoProps> = ({
 	trimBeforeValue,
 	headless,
 	onError,
+	credentials,
+	objectFit: objectFitProp,
 }) => {
 	if (!src) {
 		throw new TypeError('No `src` was passed to <Video>.');
@@ -184,6 +189,7 @@ export const VideoForRendering: React.FC<InnerVideoProps> = ({
 			trimBefore: trimBeforeValue,
 			fps,
 			maxCacheSize,
+			credentials,
 		})
 			.then((result) => {
 				const handleError = (
@@ -383,13 +389,23 @@ export const VideoForRendering: React.FC<InnerVideoProps> = ({
 		cancelRender,
 		headless,
 		onError,
+		credentials,
 	]);
+
+	warnAboutObjectFitInStyleOrClassName({style, className, logLevel});
 
 	const classNameValue = useMemo(() => {
 		return [Internals.OBJECTFIT_CONTAIN_CLASS_NAME, className]
 			.filter(Internals.truthy)
 			.join(' ');
 	}, [className]);
+
+	const styleWithObjectFit: React.CSSProperties = useMemo(() => {
+		return {
+			...style,
+			objectFit: objectFitProp,
+		};
+	}, [objectFitProp, style]);
 
 	if (replaceWithOffthreadVideo) {
 		const fallback = (
@@ -405,7 +421,7 @@ export const VideoForRendering: React.FC<InnerVideoProps> = ({
 				delayRenderTimeoutInMilliseconds={
 					delayRenderTimeoutInMilliseconds ?? undefined
 				}
-				style={style}
+				style={styleWithObjectFit}
 				allowAmplificationDuringRender
 				transparent={fallbackOffthreadVideoProps?.transparent ?? true}
 				toneMapped={fallbackOffthreadVideoProps?.toneMapped ?? true}
@@ -468,5 +484,11 @@ export const VideoForRendering: React.FC<InnerVideoProps> = ({
 		return null;
 	}
 
-	return <canvas ref={canvasRef} style={style} className={classNameValue} />;
+	return (
+		<canvas
+			ref={canvasRef}
+			style={styleWithObjectFit}
+			className={classNameValue}
+		/>
+	);
 };

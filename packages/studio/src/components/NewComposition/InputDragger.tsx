@@ -9,6 +9,10 @@ import {BLUE} from '../../helpers/colors';
 import {noop} from '../../helpers/noop';
 import {getClickLock, setClickLock} from '../../state/input-dragger-click-lock';
 import {HigherZIndex} from '../../state/z-index';
+import {
+	forceSpecificCursor,
+	stopForcingSpecificCursor,
+} from '../ForceSpecificCursor';
 import type {RemInputStatus} from './RemInput';
 import {RemotionInput, inputBaseStyle} from './RemInput';
 
@@ -19,6 +23,7 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
 	readonly status: RemInputStatus;
 	readonly formatter?: (str: number | string) => string;
 	readonly rightAlign: boolean;
+	readonly small?: boolean;
 };
 
 const isInt = (num: number) => {
@@ -40,34 +45,44 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 		formatter = (q) => String(q),
 		status,
 		rightAlign,
+		small,
 		...props
 	},
 	ref,
 ) => {
 	const [inputFallback, setInputFallback] = useState(false);
+	const [dragging, setDragging] = useState(false);
 	const fallbackRef = useRef<HTMLInputElement>(null);
+	const pointerDownRef = useRef(false);
 	const style = useMemo(() => {
 		return {
 			...inputBaseStyle,
 			backgroundColor: 'transparent',
 			borderColor: 'transparent',
 			padding: '4px 6px',
+			...{outline: 'none'},
 		};
 	}, []);
 
 	const span: React.CSSProperties = useMemo(
 		() => ({
-			borderBottom: '1px dotted ' + BLUE,
-			paddingBottom: 1,
-			color: BLUE,
+			color: dragging ? 'var(--remotion-cli-internals-blue-hovered)' : BLUE,
 			cursor: 'ew-resize',
 			userSelect: 'none',
 			WebkitUserSelect: 'none',
-			fontSize: 13,
+			fontSize: small ? 12 : 14,
 			fontVariantNumeric: 'tabular-nums',
 		}),
-		[],
+		[dragging, small],
 	);
+
+	const onFocus = useCallback(() => {
+		if (!small || pointerDownRef.current) {
+			return;
+		}
+
+		setInputFallback(true);
+	}, [small]);
 
 	const onClick: MouseEventHandler<HTMLButtonElement> = useCallback((e) => {
 		if (!getClickLock()) {
@@ -85,6 +100,16 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 		setInputFallback(false);
 	}, []);
 
+	const onInputChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
+		(e) => {
+			const parsed = Number(e.target.value);
+			if (e.target.value !== '' && !Number.isNaN(parsed)) {
+				onValueChange(parsed);
+			}
+		},
+		[onValueChange],
+	);
+
 	const onBlur = useCallback(() => {
 		if (!fallbackRef.current) {
 			return;
@@ -97,12 +122,13 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 		}
 
 		if (fallbackRef.current.checkValidity()) {
-			onTextChange?.(newValue);
+			onValueChangeEnd?.(Number(newValue));
+
 			setInputFallback(false);
 		} else {
 			fallbackRef.current.reportValidity();
 		}
-	}, [onEscape, onTextChange]);
+	}, [onEscape, onValueChangeEnd]);
 
 	const onKeyPress: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
 		(e) => {
@@ -120,6 +146,8 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 
 	const onPointerDown: PointerEventHandler = useCallback(
 		(e) => {
+			pointerDownRef.current = true;
+			const target = e.currentTarget as HTMLButtonElement;
 			const {pageX, pageY, button} = e;
 			if (button !== 0) {
 				return;
@@ -138,6 +166,9 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 
 				if (distanceFromStart > 4) {
 					setClickLock(true);
+					setDragging(true);
+					forceSpecificCursor('ew-resize');
+					target.blur();
 				}
 
 				const diff = interpolate(
@@ -156,6 +187,9 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 				'pointerup',
 				() => {
 					window.removeEventListener('mousemove', moveListener);
+					pointerDownRef.current = false;
+					setDragging(false);
+					stopForcingSpecificCursor();
 					if (lastDragValue !== null && onValueChangeEnd) {
 						onValueChangeEnd(lastDragValue);
 					}
@@ -198,6 +232,7 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 					autoFocus
 					onKeyPress={onKeyPress}
 					onBlur={onBlur}
+					onChange={onInputChange}
 					min={_min}
 					max={_max}
 					step={deriveStep}
@@ -206,6 +241,7 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 					pattern={'[0-9]*[.]?[0-9]*'}
 					rightAlign={rightAlign}
 					{...props}
+					{...(small ? {style: {padding: '4px 6px', fontSize: 12}} : {})}
 				/>
 			</HigherZIndex>
 		);
@@ -215,8 +251,10 @@ const InputDraggerForwardRefFn: React.ForwardRefRenderFunction<
 		<button
 			ref={ref}
 			type="button"
+			className={'__remotion_input_dragger'}
 			style={style}
 			onClick={onClick}
+			onFocus={onFocus}
 			onPointerDown={onPointerDown}
 		>
 			<span style={span}>{formatter(value as string | number)}</span>

@@ -3,6 +3,7 @@ import {createContext} from 'react';
 import type {AnyZodObject} from './any-zod-type.js';
 import type {AnyComposition, TComposition} from './CompositionManager.js';
 import type {TFolder} from './Folder.js';
+import type {NonceHistory} from './nonce.js';
 import type {VideoConfig} from './video-config.js';
 
 export type BaseMetadata = Pick<
@@ -49,13 +50,13 @@ export type CompositionManagerSetters = {
 		comp: TComposition<Schema, Props>,
 	) => void;
 	unregisterComposition: (name: string) => void;
-	registerFolder: (name: string, parent: string | null) => void;
+	registerFolder: (
+		name: string,
+		parent: string | null,
+		nonce: NonceHistory,
+	) => void;
 	unregisterFolder: (name: string, parent: string | null) => void;
 	setCanvasContent: React.Dispatch<React.SetStateAction<CanvasContent | null>>;
-	updateCompositionDefaultProps: (
-		id: string,
-		newDefaultProps: Record<string, unknown>,
-	) => void;
 	// This is not a setter but also a value that does not change
 	onlyRenderComposition: string | null;
 };
@@ -80,6 +81,5 @@ export const CompositionSetters = createContext<CompositionManagerSetters>({
 	registerFolder: () => undefined,
 	unregisterFolder: () => undefined,
 	setCanvasContent: () => undefined,
-	updateCompositionDefaultProps: () => undefined,
 	onlyRenderComposition: null,
 });

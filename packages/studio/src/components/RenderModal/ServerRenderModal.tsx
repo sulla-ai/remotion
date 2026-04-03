@@ -34,6 +34,8 @@ import {
 	envVariablesArrayToObject,
 	envVariablesObjectToArray,
 } from '../../helpers/convert-env-variables';
+import {copyText} from '../../helpers/copy-text';
+import {makeReadOnlyStudioRenderCommand} from '../../helpers/make-render-command';
 import {useRenderModalSections} from '../../helpers/render-modal-sections';
 import {useKeybinding} from '../../helpers/use-keybinding';
 import {AudioIcon} from '../../icons/audio';
@@ -50,6 +52,7 @@ import {VERTICAL_SCROLLBAR_CLASSNAME} from '../Menu/is-menu-item';
 import {ModalHeader} from '../ModalHeader';
 import type {ComboboxValue} from '../NewComposition/ComboBox';
 import {DismissableModal} from '../NewComposition/DismissableModal';
+import {showNotification} from '../Notifications/NotificationCenter';
 import {
 	optionsSidebarTabs,
 	persistSelectedOptionsSidebarPanel,
@@ -90,6 +93,7 @@ import {
 	ResolveCompositionBeforeModal,
 	ResolvedCompositionContext,
 } from './ResolveCompositionBeforeModal';
+import type {UpdaterFunction} from './SchemaEditor/ZodSwitch';
 
 type State =
 	| {
@@ -141,6 +145,7 @@ const reducer = (state: State, action: Action): State => {
 };
 
 type RenderModalProps = {
+	readonly readOnlyStudio: boolean;
 	readonly compositionId: string;
 	readonly initialFrame: number;
 	readonly initialVideoImageFormat: VideoImageFormat | null;
@@ -195,6 +200,7 @@ const RenderModal: React.FC<
 		readonly defaultConfigurationVideoCodec: Codec | null;
 	}
 > = ({
+	readOnlyStudio,
 	initialFrame,
 	initialVideoImageFormat,
 	initialStillImageFormat,
@@ -283,7 +289,6 @@ const RenderModal: React.FC<
 
 	const [state, dispatch] = useReducer(reducer, initialState);
 	const [unclampedFrame, setFrame] = useState(() => initialFrame);
-	const [saving, setSaving] = useState<boolean>(false);
 	const [stillImageFormat, setStillImageFormat] = useState<StillImageFormat>(
 		() => initialStillImageFormat,
 	);
@@ -581,7 +586,13 @@ const RenderModal: React.FC<
 		return null;
 	}, [codec, x264PresetSetting, renderMode]);
 
-	const [inputProps, setInputProps] = useState(() => defaultProps);
+	const [inputProps, _setInputProps] = useState(() => defaultProps);
+	const setInputProps: UpdaterFunction<Record<string, unknown>> = useCallback(
+		(updater) => {
+			_setInputProps(updater);
+		},
+		[],
+	);
 
 	const [metadata] = useState(() => defaultMetadata);
 
@@ -1159,9 +1170,154 @@ const RenderModal: React.FC<
 
 	const {registerKeybinding} = useKeybinding();
 
-	const renderDisabled = state.type === 'load' || !outnameValidation.valid;
+	const readOnlyRenderCommand = useMemo(() => {
+		if (!readOnlyStudio) {
+			return null;
+		}
+
+		return makeReadOnlyStudioRenderCommand({
+			remotionVersion: window.remotion_version,
+			locationHref: window.location.href,
+			compositionId: resolvedComposition.id,
+			outName,
+			renderMode,
+			renderDefaults,
+			durationInFrames: resolvedComposition.durationInFrames,
+			concurrency,
+			frame,
+			startFrame,
+			endFrame,
+			stillImageFormat,
+			sequenceImageFormat,
+			videoImageFormat,
+			jpegQuality:
+				renderMode === 'video'
+					? stillImageFormat === 'jpeg'
+						? jpegQuality
+						: null
+					: renderMode === 'audio'
+						? null
+						: jpegQuality,
+			codec,
+			muted,
+			enforceAudioTrack,
+			proResProfile,
+			x264Preset,
+			pixelFormat,
+			crf:
+				qualityControlType === 'crf' &&
+				hardwareAcceleration !== 'if-possible' &&
+				hardwareAcceleration !== 'required'
+					? crf
+					: null,
+			videoBitrate,
+			audioBitrate,
+			audioCodec,
+			everyNthFrame,
+			numberOfGifLoops,
+			disallowParallelEncoding,
+			encodingBufferSize,
+			encodingMaxRate,
+			forSeamlessAacConcatenation,
+			separateAudioTo,
+			colorSpace,
+			scale,
+			logLevel,
+			delayRenderTimeout,
+			hardwareAcceleration,
+			chromeMode,
+			headless,
+			disableWebSecurity,
+			ignoreCertificateErrors,
+			gl: openGlOption === 'default' ? null : openGlOption,
+			userAgent,
+			multiProcessOnLinux,
+			darkMode,
+			offthreadVideoCacheSizeInBytes,
+			offthreadVideoThreads,
+			mediaCacheSizeInBytes,
+			beepOnFinish,
+			repro,
+			metadata,
+			envVariables: envVariablesArrayToObject(envVariables),
+			inputProps,
+		});
+	}, [
+		audioBitrate,
+		audioCodec,
+		beepOnFinish,
+		chromeMode,
+		codec,
+		colorSpace,
+		concurrency,
+		crf,
+		darkMode,
+		delayRenderTimeout,
+		disableWebSecurity,
+		disallowParallelEncoding,
+		endFrame,
+		encodingBufferSize,
+		encodingMaxRate,
+		enforceAudioTrack,
+		envVariables,
+		everyNthFrame,
+		frame,
+		forSeamlessAacConcatenation,
+		hardwareAcceleration,
+		headless,
+		ignoreCertificateErrors,
+		inputProps,
+		jpegQuality,
+		logLevel,
+		mediaCacheSizeInBytes,
+		metadata,
+		multiProcessOnLinux,
+		muted,
+		numberOfGifLoops,
+		offthreadVideoCacheSizeInBytes,
+		offthreadVideoThreads,
+		openGlOption,
+		outName,
+		pixelFormat,
+		proResProfile,
+		qualityControlType,
+		readOnlyStudio,
+		renderDefaults,
+		renderMode,
+		repro,
+		resolvedComposition.durationInFrames,
+		resolvedComposition.id,
+		scale,
+		separateAudioTo,
+		sequenceImageFormat,
+		startFrame,
+		stillImageFormat,
+		userAgent,
+		videoImageFormat,
+		videoBitrate,
+		x264Preset,
+	]);
+	const [commandCopiedAt, setCommandCopiedAt] = useState<number | null>(null);
+	const renderDisabled = readOnlyStudio
+		? false
+		: !outnameValidation.valid || state.type === 'load';
 
 	const trigger = useCallback(() => {
+		if (readOnlyStudio) {
+			if (!readOnlyRenderCommand) {
+				return;
+			}
+
+			copyText(readOnlyRenderCommand)
+				.then(() => {
+					setCommandCopiedAt(Date.now());
+				})
+				.catch((err) => {
+					showNotification(`Could not copy: ${err.message}`, 2000);
+				});
+			return;
+		}
+
 		if (renderMode === 'still') {
 			onClickStill();
 		} else if (renderMode === 'sequence') {
@@ -1169,7 +1325,25 @@ const RenderModal: React.FC<
 		} else {
 			onClickVideo();
 		}
-	}, [renderMode, onClickStill, onClickSequence, onClickVideo]);
+	}, [
+		onClickSequence,
+		onClickStill,
+		onClickVideo,
+		readOnlyRenderCommand,
+		readOnlyStudio,
+		renderMode,
+	]);
+
+	useEffect(() => {
+		if (commandCopiedAt === null) {
+			return;
+		}
+
+		const timeout = setTimeout(() => {
+			setCommandCopiedAt(null);
+		}, 2000);
+		return () => clearTimeout(timeout);
+	}, [commandCopiedAt]);
 
 	useEffect(() => {
 		if (renderDisabled) {
@@ -1224,7 +1398,13 @@ const RenderModal: React.FC<
 						backgroundColor: outnameValidation.valid ? BLUE : BLUE_DISABLED,
 					}}
 				>
-					{state.type === 'idle' ? `Render ${renderMode}` : 'Rendering...'}
+					{readOnlyStudio
+						? commandCopiedAt
+							? 'Copied command!'
+							: 'Copy command'
+						: state.type === 'idle'
+							? `Render ${renderMode}`
+							: 'Rendering...'}
 					<ShortcutHint keyToPress="↵" cmdOrCtrl />
 				</Button>
 			</div>
@@ -1322,6 +1502,7 @@ const RenderModal: React.FC<
 							setStartFrame={setStartFrame}
 							setVerboseLogging={setLogLevel}
 							logLevel={logLevel}
+							showOutputName={!readOnlyStudio}
 							startFrame={startFrame}
 							validationMessage={
 								outnameValidation.valid ? null : outnameValidation.error.message
@@ -1399,11 +1580,12 @@ const RenderModal: React.FC<
 							defaultProps={inputProps}
 							setDefaultProps={setInputProps}
 							unresolvedComposition={unresolvedComposition}
-							mayShowSaveButton={false}
 							propsEditType="input-props"
-							saving={saving}
-							setSaving={setSaving}
-							readOnlyStudio={false}
+							canSaveDefaultProps={{
+								canUpdate: false,
+								reason: 'render dialogue',
+								determined: false,
+							}}
 						/>
 					) : (
 						<RenderModalAdvanced

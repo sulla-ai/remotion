@@ -2,6 +2,7 @@ import './_check-rsc.js';
 import './asset-types.js';
 import {Clipper} from './Clipper.js';
 import type {Codec} from './codec.js';
+import {Composition} from './Composition.js';
 import type {
 	AnyCompMetadata,
 	AnyComposition,
@@ -63,7 +64,7 @@ declare global {
 		remotion_ignoreFastRefreshUpdate: number | null;
 		remotion_numberOfAudioTags: number;
 		remotion_audioLatencyHint: AudioContextLatencyCategory | undefined;
-		remotion_logLevel: LogLevel;
+		remotion_logLevel: LogLevel | undefined;
 		remotion_projectName: string;
 		remotion_cwd: string;
 		remotion_studioServerCommand: string;
@@ -93,7 +94,6 @@ declare global {
 		siteVersion: '11';
 		remotion_version: string;
 		remotion_imported: string | boolean;
-		remotion_unsavedProps: boolean | undefined;
 	}
 }
 
@@ -148,6 +148,7 @@ export {DownloadBehavior} from './download-behavior.js';
 export * from './easing.js';
 export * from './Folder.js';
 export * from './freeze.js';
+export type {NonceHistory} from './nonce.js';
 export {getRemotionEnvironment} from './get-remotion-environment.js';
 export {getStaticFiles, StaticFile} from './get-static-files.js';
 export * from './IFrame.js';
@@ -202,6 +203,7 @@ export {
 	RemotionVideoProps,
 	Video,
 } from './video/index.js';
+export {MediaPlaybackError} from './video/MediaPlaybackError.js';
 export type {OnVideoFrame} from './video/props.js';
 export type {VolumeProp} from './volume-prop.js';
 export {watchStaticFile} from './watch-static-file.js';
@@ -258,6 +260,7 @@ export const Config = new Proxy(proxyObj, {
 
 Sequence.displayName = 'Sequence';
 addSequenceStackTraces(Sequence);
+addSequenceStackTraces(Composition);
 
 export type _InternalTypes = {
 	AnyComposition: AnyComposition;

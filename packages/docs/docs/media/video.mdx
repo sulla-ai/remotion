@@ -204,6 +204,40 @@ export const MyComposition = () => {
 };
 ```
 
+### `objectFit?`<AvailableFrom v="4.0.442" />
+
+Controls how the video content is resized to fit the canvas element, similar to the CSS `object-fit` property on `<img>` elements.
+
+Accepts `'contain'` (default), `'cover'`, `'fill'`, `'none'`, or `'scale-down'`.
+
+- `'contain'`: The video is scaled to maintain its aspect ratio while fitting within the element's content box. Letterboxing is applied if the aspect ratios don't match.
+- `'cover'`: The video is sized to maintain its aspect ratio while filling the element's entire content box. The video will be clipped to fit.
+- `'fill'`: The video is stretched to fill the element's content box. The video's aspect ratio is not preserved.
+- `'none'`: The video is not resized. It is centered within the element.
+- `'scale-down'`: The video is sized as if `none` or `contain` were specified, whichever would result in a smaller size.
+
+```tsx twoslash
+import {AbsoluteFill, staticFile} from 'remotion';
+import {Video} from '@remotion/media';
+
+// ---cut---
+export const MyComposition = () => {
+  return (
+    <AbsoluteFill>
+      <Video
+        src={staticFile('video.webm')}
+        style={{width: '100%', height: '100%'}}
+        objectFit="cover"
+      />
+    </AbsoluteFill>
+  );
+};
+```
+
+:::note
+The CSS property `object-fit` is not supported.
+:::
+
 ### `loop?`
 
 Makes the video loop indefinitely.
@@ -269,6 +303,27 @@ export const MyComposition = () => {
 };
 ```
 
+### `credentials?`<AvailableFrom v="4.0.437" />
+
+Controls the [`credentials`](https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials) option of the `fetch()` requests made to retrieve the video data.
+
+Accepts `"omit"`, `"same-origin"` (default behavior of `fetch()`) or `"include"`.
+Set to `"include"` if you need to send cookies or authentication headers to a cross-origin video URL.
+
+```tsx twoslash
+import {AbsoluteFill} from 'remotion';
+import {Video} from '@remotion/media';
+
+// ---cut---
+export const MyComposition = () => {
+  return (
+    <AbsoluteFill>
+      <Video credentials="include" src="https://example.com/protected-video.mp4" />
+    </AbsoluteFill>
+  );
+};
+```
+
 ### `toneFrequency?`
 
 Accepts a number between `0.01` and `2`, where `1` represents the original pitch. Values less than `1` will decrease the pitch, while values greater than `1` will increase it.
@@ -328,7 +383,7 @@ Maps to [`<OffthreadVideo />` -> `pauseWhenBuffering`](/docs/offthreadvideo#paus
 
 Maps to [`<OffthreadVideo />` -> `onAutoPlayError`](/docs/offthreadvideo#onautoplayerror)
 
-### `disallowFallbackToOffthreadVideo?`<AvailableFrom v="3.0.356" />
+### `disallowFallbackToOffthreadVideo?`
 
 By default, if the video cannot be embedded using this tag, [a fallback to `<OffthreadVideo>`](/docs/media/fallback) will be attempted.
 
@@ -341,6 +396,10 @@ When using [`@remotion/web-renderer`](/docs/web-renderer) for client-side render
 ### `debugOverlay?`
 
 Shows a debug overlay on the video. This is useful for debugging the video playback.
+
+### `debugAudioScheduling?`
+
+Logs audio scheduling information to the console. This is useful for debugging audio playback timing issues.
 
 ## See also
 

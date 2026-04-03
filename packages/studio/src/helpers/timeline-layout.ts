@@ -6,10 +6,15 @@ export const TIMELINE_ITEM_BORDER_BOTTOM = 1;
 
 export const TIMELINE_TRACK_EXPANDED_HEIGHT = 100;
 
-export const SCHEMA_FIELD_ROW_HEIGHT = 26;
-export const UNSUPPORTED_FIELD_ROW_HEIGHT = 26;
+export const SCHEMA_FIELD_ROW_HEIGHT = 22;
+export const UNSUPPORTED_FIELD_ROW_HEIGHT = 22;
 
-const SUPPORTED_SCHEMA_TYPES = new Set(['number', 'boolean']);
+const SUPPORTED_SCHEMA_TYPES = new Set([
+	'number',
+	'boolean',
+	'rotation',
+	'translate',
+]);
 
 export type SchemaFieldInfo = {
 	key: string;
@@ -53,13 +58,24 @@ export const getExpandedTrackHeight = (
 		return TIMELINE_TRACK_EXPANDED_HEIGHT;
 	}
 
-	return fields.reduce((sum, f) => sum + f.rowHeight, 0);
+	const separators = Math.max(0, fields.length - 1);
+	return fields.reduce((sum, f) => sum + f.rowHeight, 0) + separators;
 };
 
-export const getTimelineLayerHeight = (type: 'video' | 'other') => {
+export const TIMELINE_LAYER_HEIGHT_VIDEO = 75;
+export const TIMELINE_LAYER_HEIGHT_IMAGE = 50;
+export const TIMELINE_LAYER_HEIGHT_AUDIO = 25;
+
+export const getTimelineLayerHeight = (
+	type: 'video' | 'image' | 'audio' | 'sequence' | 'other',
+) => {
 	if (type === 'video') {
-		return 50;
+		return TIMELINE_LAYER_HEIGHT_VIDEO;
 	}
 
-	return 25;
+	if (type === 'image') {
+		return TIMELINE_LAYER_HEIGHT_IMAGE;
+	}
+
+	return TIMELINE_LAYER_HEIGHT_AUDIO;
 };

@@ -6,6 +6,7 @@ export const listOfRemotionPackages = [
 	'@remotion/astro-example',
 	'@remotion/babel-loader',
 	'@remotion/bugs',
+	'@remotion/brand',
 	'@remotion/bundler',
 	'@remotion/cli',
 	'@remotion/cloudrun',
@@ -77,6 +78,7 @@ export const listOfRemotionPackages = [
 	'@remotion/convert',
 	'@remotion/captions',
 	'@remotion/openai-whisper',
+	'@remotion/elevenlabs',
 	'@remotion/compositor',
 	'@remotion/example-videos',
 	'@remotion/whisper-web',
@@ -84,6 +86,7 @@ export const listOfRemotionPackages = [
 	'@remotion/web-renderer',
 	'@remotion/design',
 	'@remotion/light-leaks',
+	'@remotion/starburst',
 	'@remotion/vercel',
 	'@remotion/sfx',
 ];

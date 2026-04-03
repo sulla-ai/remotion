@@ -11,6 +11,7 @@ import {
 	SlideDemoLongDurationRest,
 	WipeDemo,
 } from '../transitions/previews';
+import {ArrowDemo} from './Arrow';
 import {CircleDemo} from './Circle';
 import {EllipseDemo} from './Ellipse';
 import {HeartDemo} from './Heart';
@@ -23,6 +24,7 @@ import {RoundedTextBox} from './RoundedTextBox';
 import {ShaderDemoComp} from './ShaderDemo';
 import {SpringDemo} from './Spring';
 import {StarDemo} from './Star';
+import {StarburstDemoComp} from './StarburstDemo';
 import {AnimationMath} from './SubtractAnimations';
 import {TransitionSeriesEnterExitDemoComp} from './TransitionSeriesEnterExitDemo';
 import {TransitionSeriesOverlayDemoComp} from './TransitionSeriesOverlayDemo';
@@ -73,6 +75,71 @@ export type DemoType = {
 	options: Option[];
 	autoPlay: boolean;
 	controls: boolean;
+};
+
+export const arrowDemo: DemoType = {
+	comp: ArrowDemo,
+	compWidth: 1280,
+	compHeight: 400,
+	durationInFrames: 150,
+	fps: 30,
+	id: 'arrow',
+	autoPlay: false,
+	controls: false,
+	options: [
+		{
+			default: 300,
+			max: 1000,
+			step: 5,
+			min: 1,
+			type: 'numeric',
+			name: 'length',
+			optional: 'no',
+		},
+		{
+			default: 185,
+			max: 400,
+			step: 5,
+			min: 1,
+			type: 'numeric',
+			name: 'headWidth',
+			optional: 'no',
+		},
+		{
+			default: 120,
+			max: 400,
+			step: 5,
+			min: 1,
+			type: 'numeric',
+			name: 'headLength',
+			optional: 'no',
+		},
+		{
+			default: 80,
+			max: 400,
+			step: 5,
+			min: 1,
+			type: 'numeric',
+			name: 'shaftWidth',
+			optional: 'no',
+		},
+		{
+			name: 'direction',
+			type: 'enum',
+			default: 'right',
+			values: ['up', 'down', 'left', 'right'],
+			optional: 'no',
+		},
+		{
+			name: 'cornerRadius',
+			default: 0,
+			max: 100,
+			min: 0,
+			step: 1,
+			type: 'numeric',
+			optional: 'no',
+		},
+	],
 };
 
 export const rectDemo: DemoType = {
@@ -979,6 +1046,73 @@ export const lightLeakDemo: DemoType = {
 			min: 0,
 			max: 360,
 			step: 1,
+			optional: 'no',
+		},
+	],
+};
+
+export const starburstDemo: DemoType = {
+	comp: StarburstDemoComp,
+	compHeight: 720,
+	compWidth: 1280,
+	durationInFrames: 90,
+	fps: 30,
+	id: 'starburst',
+	autoPlay: false,
+	controls: false,
+	options: [
+		{
+			name: 'rays',
+			type: 'numeric',
+			default: 12,
+			min: 2,
+			max: 100,
+			step: 1,
+			optional: 'no',
+		},
+		{
+			name: 'rotation',
+			type: 'numeric',
+			default: 0,
+			min: 0,
+			max: 360,
+			step: 1,
+			optional: 'no',
+		},
+		{
+			name: 'smoothness',
+			type: 'numeric',
+			default: 0,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			optional: 'no',
+		},
+		{
+			name: 'vignette',
+			type: 'numeric',
+			default: 1,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			optional: 'no',
+		},
+		{
+			name: 'originOffsetX',
+			type: 'numeric',
+			default: 0,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			optional: 'no',
+		},
+		{
+			name: 'originOffsetY',
+			type: 'numeric',
+			default: 0,
+			min: -1,
+			max: 1,
+			step: 0.01,
 			optional: 'no',
 		},
 	],

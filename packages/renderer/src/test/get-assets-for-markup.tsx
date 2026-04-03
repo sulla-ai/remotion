@@ -83,7 +83,7 @@ export const getAssetsForMarkup = async (
 								default: Markup as ComponentType<unknown>,
 							}),
 						),
-						nonce: 0,
+						nonce: [[0, 0]],
 						defaultProps: undefined,
 						folderName: null,
 						parentFolderName: null,
@@ -93,6 +93,7 @@ export const getAssetsForMarkup = async (
 						fps: config.fps,
 						height: config.height,
 						width: config.width,
+						stack: null,
 					},
 				],
 				canvasContent: {
@@ -122,7 +123,6 @@ export const getAssetsForMarkup = async (
 						numberOfAudioTags={0}
 						logLevel="info"
 						audioLatencyHint="interactive"
-						nonceContextSeed={0}
 					>
 						<Internals.RenderAssetManagerProvider collectAssets={null}>
 							<Internals.CompositionManager.Provider value={value}>

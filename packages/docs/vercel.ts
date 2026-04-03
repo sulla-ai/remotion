@@ -114,9 +114,6 @@ export const config: VercelConfig = {
 		routes.redirect('/github', 'https://github.com/remotion-dev/remotion', {
 			permanent: false,
 		}),
-		routes.redirect('/brand', 'https://github.com/remotion-dev/logo', {
-			permanent: false,
-		}),
 		routes.redirect('/docs/lottie/after-effects', '/docs/after-effects', {
 			permanent: false,
 		}),
@@ -190,9 +187,6 @@ export const config: VercelConfig = {
 			permanent: false,
 		}),
 		routes.redirect('/bun', '/docs/bun', {permanent: false}),
-		routes.redirect('/bounties', '/docs/contributing/bounty', {
-			permanent: false,
-		}),
 		routes.redirect('/transitions', '/docs/transitioning', {
 			permanent: false,
 		}),

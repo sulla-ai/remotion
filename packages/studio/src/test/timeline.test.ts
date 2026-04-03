@@ -4,30 +4,8 @@ import {calculateTimeline} from '../helpers/calculate-timeline';
 test('Should calculate timeline with no sequences', () => {
 	const calculated = calculateTimeline({
 		sequences: [],
-		sequenceDuration: 100,
 	});
-	expect(calculated).toEqual([
-		{
-			sequence: {
-				displayName: '',
-				duration: 100,
-				from: 0,
-				id: 'seq',
-				parent: null,
-				type: 'sequence',
-				rootId: '-',
-				showInTimeline: true,
-				nonce: 0,
-				premountDisplay: null,
-				postmountDisplay: null,
-				controls: null,
-				loopDisplay: undefined,
-				stack: null,
-			},
-			depth: 0,
-			hash: '-',
-		},
-	]);
+	expect(calculated).toEqual([]);
 });
 
 test('Should calculate a basic timeline', () => {
@@ -42,7 +20,7 @@ test('Should calculate a basic timeline', () => {
 				rootId: '0.1',
 				showInTimeline: true,
 				type: 'sequence',
-				nonce: 0,
+				nonce: [[0, 0]],
 				stack: null,
 				premountDisplay: null,
 				postmountDisplay: null,
@@ -50,7 +28,6 @@ test('Should calculate a basic timeline', () => {
 				loopDisplay: undefined,
 			},
 		],
-		sequenceDuration: 100,
 	});
 	expect(calculated).toEqual([
 		{
@@ -69,7 +46,7 @@ test('Should calculate a basic timeline', () => {
 				loopDisplay: undefined,
 				stack: null,
 				type: 'sequence',
-				nonce: 0,
+				nonce: [[0, 0]],
 			},
 			hash: '-Audio-100-0-sequence----0',
 		},
@@ -88,7 +65,7 @@ test('Should follow order of nesting', () => {
 				rootId: '0.1',
 				showInTimeline: true,
 				type: 'sequence',
-				nonce: 0,
+				nonce: [[0, 0]],
 				stack: null,
 				premountDisplay: null,
 				postmountDisplay: null,
@@ -108,11 +85,10 @@ test('Should follow order of nesting', () => {
 				rootId: '0.1',
 				showInTimeline: true,
 				type: 'sequence',
-				nonce: 0,
+				nonce: [[0, 0]],
 				stack: null,
 			},
 		],
-		sequenceDuration: 100,
 	});
 	expect(calculated).toEqual([
 		{
@@ -129,7 +105,7 @@ test('Should follow order of nesting', () => {
 				rootId: '0.1',
 				showInTimeline: true,
 				type: 'sequence',
-				nonce: 0,
+				nonce: [[0, 0]],
 				stack: null,
 			},
 			depth: 0,
@@ -145,7 +121,7 @@ test('Should follow order of nesting', () => {
 				rootId: '0.1',
 				showInTimeline: true,
 				type: 'sequence',
-				nonce: 0,
+				nonce: [[0, 0]],
 				stack: null,
 				premountDisplay: null,
 				postmountDisplay: null,

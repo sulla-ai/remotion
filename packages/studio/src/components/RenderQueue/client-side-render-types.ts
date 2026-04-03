@@ -11,6 +11,9 @@ import type {LogLevel} from 'remotion';
 export type ClientRenderJobProgress = {
 	encodedFrames: number;
 	totalFrames: number;
+	doneIn: number | null;
+	renderEstimatedTime: number;
+	progress: number;
 };
 
 export type GetBlobCallback = () => Promise<Blob>;
@@ -52,7 +55,7 @@ export type ClientStillRenderJob = ClientRenderJobBase & {
 export type ClientVideoRenderJob = ClientRenderJobBase & {
 	type: 'client-video';
 	container: WebRendererContainer;
-	videoCodec: WebRendererVideoCodec;
+	videoCodec: WebRendererVideoCodec | null;
 	audioCodec: WebRendererAudioCodec;
 	startFrame: number;
 	endFrame: number;

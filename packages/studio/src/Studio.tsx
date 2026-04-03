@@ -1,11 +1,10 @@
-import React, {useContext, useLayoutEffect} from 'react';
+import React, {useLayoutEffect} from 'react';
 import {createPortal} from 'react-dom';
 import {Internals} from 'remotion';
 import {Editor} from './components/Editor';
 import {EditorContexts} from './components/EditorContexts';
 import {ServerDisconnected} from './components/Notifications/ServerDisconnected';
 import {StaticFilesProvider} from './components/use-static-files';
-import {FastRefreshContext} from './fast-refresh-context';
 import {FastRefreshProvider} from './FastRefreshProvider';
 import {injectCSS} from './helpers/inject-css';
 import {ResolveCompositionConfigInStudio} from './ResolveCompositionConfigInStudio';
@@ -19,8 +18,6 @@ const StudioInner: React.FC<{
 	readonly readOnly: boolean;
 	readonly visualModeEnabled: boolean;
 }> = ({rootComponent, readOnly, visualModeEnabled}) => {
-	const {fastRefreshes, manualRefreshes} = useContext(FastRefreshContext);
-
 	return (
 		<Internals.CompositionManagerProvider
 			onlyRenderComposition={null}
@@ -33,10 +30,9 @@ const StudioInner: React.FC<{
 				frameState={null}
 				audioEnabled={window.remotion_audioEnabled}
 				videoEnabled={window.remotion_videoEnabled}
-				logLevel={window.remotion_logLevel}
+				logLevel={window.remotion_logLevel ?? 'info'}
 				numberOfAudioTags={window.remotion_numberOfAudioTags}
 				audioLatencyHint={window.remotion_audioLatencyHint ?? 'interactive'}
-				nonceContextSeed={fastRefreshes + manualRefreshes}
 			>
 				<StaticFilesProvider>
 					<ResolveCompositionConfigInStudio>

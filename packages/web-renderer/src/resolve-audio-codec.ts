@@ -7,6 +7,9 @@ import {
 	type WebRendererAudioCodec,
 	type WebRendererContainer,
 } from './mediabunny-mappings';
+import {ensureAacEncoderRegistered} from './register-aac-encoder';
+import {ensureFlacEncoderRegistered} from './register-flac-encoder';
+import {ensureMp3EncoderRegistered} from './register-mp3-encoder';
 
 export type ResolveAudioCodecResult = {
 	codec: WebRendererAudioCodec | null;
@@ -38,6 +41,19 @@ export const resolveAudioCodec = async (options: {
 	}
 
 	const mediabunnyAudioCodec = audioCodecToMediabunnyAudioCodec(audioCodec);
+
+	if (audioCodec === 'mp3') {
+		await ensureMp3EncoderRegistered();
+	}
+
+	if (audioCodec === 'aac') {
+		await ensureAacEncoderRegistered();
+	}
+
+	if (audioCodec === 'flac') {
+		await ensureFlacEncoderRegistered();
+	}
+
 	const canEncode = await canEncodeAudio(mediabunnyAudioCodec, {bitrate});
 
 	if (canEncode) {
@@ -56,6 +72,18 @@ export const resolveAudioCodec = async (options: {
 
 	for (const fallbackCodec of supportedAudioCodecs) {
 		if (fallbackCodec !== audioCodec) {
+			if (fallbackCodec === 'mp3') {
+				await ensureMp3EncoderRegistered();
+			}
+
+			if (fallbackCodec === 'aac') {
+				await ensureAacEncoderRegistered();
+			}
+
+			if (fallbackCodec === 'flac') {
+				await ensureFlacEncoderRegistered();
+			}
+
 			const fallbackMediabunnyCodec =
 				audioCodecToMediabunnyAudioCodec(fallbackCodec);
 

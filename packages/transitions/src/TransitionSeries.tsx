@@ -209,6 +209,7 @@ const TransitionSeriesChildren: FC<{readonly children: React.ReactNode}> = ({
 					halfDuration,
 					children: overlayProps.children,
 					index: i,
+					stack: overlayProps.stack,
 				} as unknown as React.ReactNode);
 
 				return null;
@@ -508,6 +509,7 @@ const TransitionSeriesChildren: FC<{readonly children: React.ReactNode}> = ({
 				durationInFrames: number;
 				children: React.ReactNode;
 				index: number;
+				stack: string | undefined;
 			};
 
 			return (
@@ -517,6 +519,7 @@ const TransitionSeriesChildren: FC<{readonly children: React.ReactNode}> = ({
 					durationInFrames={info.durationInFrames}
 					name="<TS.Overlay>"
 					layout="absolute-fill"
+					{...(info.stack ? {stack: info.stack} : {})}
 				>
 					{info.children}
 				</Sequence>
@@ -534,7 +537,7 @@ const TransitionSeriesChildren: FC<{readonly children: React.ReactNode}> = ({
  * @description Manages a series of transitions and sequences for advanced animation controls in Remotion projects, handling cases with varying timings and presentations.
  * @see [Documentation](https://www.remotion.dev/docs/transitions/transitionseries)
  */
-export const TransitionSeries: FC<SequencePropsWithoutDuration> & {
+const TransitionSeries: FC<SequencePropsWithoutDuration> & {
 	Sequence: typeof SeriesSequence;
 	Transition: typeof TransitionSeriesTransition;
 	Overlay: typeof SeriesOverlay;
@@ -560,6 +563,8 @@ export const TransitionSeries: FC<SequencePropsWithoutDuration> & {
 TransitionSeries.Sequence = SeriesSequence;
 TransitionSeries.Transition = TransitionSeriesTransition;
 TransitionSeries.Overlay = SeriesOverlay;
+
+export {TransitionSeries};
 
 Internals.addSequenceStackTraces(TransitionSeries);
 Internals.addSequenceStackTraces(SeriesSequence);
